@@ -9,7 +9,7 @@ function ResumeRow({ item, latest }: { item: Resume; latest: boolean }) {
   return <article className="editor panel">
     <p><strong>{item.name}.pdf</strong> {latest && <span className="badge badge-blue">Current</span>}</p>
     <small>Uploaded {item.createdAt ? new Date(item.createdAt).toISOString().slice(0, 16).replace("T", " ") + " UTC" : ""} {size(item.sizeBytes) && `· ${size(item.sizeBytes)}`}</small>
-    <div className="actions"><a className="text-link" href={item.src} target="_blank" rel="noopener noreferrer">Preview ↗</a>
+    <div className="actions">{latest && <a className="text-link" href="/resume" download>Test download ↓</a>}
       <form action={action} onSubmit={e => { if (!confirm("Delete this resume? This cannot be undone.")) e.preventDefault(); }}><input type="hidden" name="id" value={item.id}/><button className="button button-secondary" disabled={pending}>{pending ? "Deleting…" : "Delete"}</button></form></div>
     {(state.error || state.success) && <p className="notice" role="status">{state.error || state.success}</p>}
   </article>;

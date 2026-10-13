@@ -95,3 +95,14 @@ export async function deleteDocument(publicId: string, config: CloudinaryConfig,
   const result = await request("destroy", form, config, requestFetch, "raw");
   if (result.result !== "ok" && result.result !== "not found") throw new CloudinaryError("Could not delete the file from Cloudinary.");
 }
+
+// Cloudinary accounts can block public delivery of PDFs (HTTP 401). The signed Admin API download works regardless,
+// and the secret never leaves the server because the route streams the file back to the visitor.
+export async function downloadDocument(publicId: string, config: CloudinaryConfig, requestFetch: typeof fetch = fetch): Promise<Response> {
+  if (!publicId.startsWith(config.folder + "/")) throw new CloudinaryError("Invalid uploaded asset reference.");
+  const params: Record<string, string> = { public_id: publicId, type: "upload", timestamp: String(Math.floor(Date.now() / 1000)) };
+  const toSign = Object.keys(params).sort().map(key => `${key}=${params[key]}`).join("&");
+  const signature = createHash("sha1").update(toSign + config.apiSecret).digest("hex");
+  const query = new URLSearchParams({ ...params, api_key: config.apiKey, signature });
+  return requestFetch(`https://api.cloudinary.com/v1_1/${config.cloudName}/raw/download?${query}`, { cache: "no-store", signal: AbortSignal.timeout(60000) });
+}
