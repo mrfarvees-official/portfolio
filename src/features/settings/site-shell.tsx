@@ -9,11 +9,7 @@ function SocialIcon({ name, label }: { name: string; label: string }) {
 function Brand({ site }: { site: Settings["site"] }) {
   return (
     <Link className="brand" href="/" aria-label={`${site.brand}${site.brandAccent} home`}>
-      <span className="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 32 32" role="presentation">
-          <path d="M8 6h17v6H15v3h8v6h-8v7H8V6Z" />
-        </svg>
-      </span>
+      <img className="brand-logo" src="/logo-cobalt.svg" alt="" width={40} height={40} />
       <span>{site.brand}<em>{site.brandAccent}</em></span>
     </Link>
   );
