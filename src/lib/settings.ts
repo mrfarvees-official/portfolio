@@ -18,6 +18,7 @@ export type Settings = {
     photo: string;
     photoAlt: string;
     handle: string;
+    resumeLabel: string;
   };
   work: { intro: string };
   experience: { intro: string };
@@ -64,6 +65,7 @@ export const defaults: Settings = {
     photo: "",
     photoAlt: "Saroath Farvees",
     handle: "mrfarvees-official",
+    resumeLabel: "Download resume",
   },
   work: {
     intro: "Projects I've built, each with a live link or the code to check.",

@@ -127,6 +127,17 @@ export const notes = mysqlTable("notes", {
   publishedAt: timestamp("published_at").defaultNow(),
 });
 
+// Uploaded resume PDFs. The newest row is the one visitors download.
+export const resumes = mysqlTable("resumes", {
+  id: int("id").autoincrement().primaryKey(),
+  src: varchar("src", { length: 2048 }).notNull(),
+  publicId: varchar("public_id", { length: 255 }),
+  assetId: varchar("asset_id", { length: 128 }),
+  name: varchar("name", { length: 200 }).notNull(), // download file name, without extension
+  sizeBytes: int("size_bytes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const media = mysqlTable("media", {
   id: int("id").autoincrement().primaryKey(),
   src: varchar("src", { length: 2048 }).notNull(),

@@ -103,6 +103,15 @@ async function main() {
       await connection.query("ALTER TABLE experiences MODIFY COLUMN slug varchar(140) NOT NULL, ADD UNIQUE INDEX experiences_slug_unique (slug)");
       console.log("Added experiences.slug");
     }
+    await connection.query(`CREATE TABLE IF NOT EXISTS resumes (
+      id int AUTO_INCREMENT PRIMARY KEY,
+      src varchar(2048) NOT NULL,
+      public_id varchar(255),
+      asset_id varchar(128),
+      name varchar(200) NOT NULL,
+      size_bytes int,
+      created_at timestamp DEFAULT CURRENT_TIMESTAMP
+    )`);
     const [mediaColumns] = await connection.query<mysql.RowDataPacket[]>("SHOW COLUMNS FROM media");
     const mediaExisting = new Set(mediaColumns.map(column => column.Field));
     for (const [column, type] of Object.entries({provider:"varchar(20) NOT NULL DEFAULT 'external'",public_id:"varchar(255)",asset_id:"varchar(128)"})) {

@@ -31,9 +31,9 @@ function signedForm(params: Record<string, string>, config: CloudinaryConfig) {
   return form;
 }
 
-async function request(operation: "upload" | "destroy", form: FormData, config: CloudinaryConfig, requestFetch: typeof fetch) {
+async function request(operation: "upload" | "destroy", form: FormData, config: CloudinaryConfig, requestFetch: typeof fetch, resource: "image" | "raw" = "image") {
   try {
-    const response = await requestFetch(`https://api.cloudinary.com/v1_1/${config.cloudName}/image/${operation}`, {
+    const response = await requestFetch(`https://api.cloudinary.com/v1_1/${config.cloudName}/${resource}/${operation}`, {
       method: "POST", body: form, signal: AbortSignal.timeout(60000), cache: "no-store",
     });
     if (!response.ok) {
@@ -72,4 +72,26 @@ export async function rollbackUpload(publicId: string, config: CloudinaryConfig,
   const form = signedForm({ public_id: publicId, invalidate: "true", timestamp: String(Math.floor(Date.now() / 1000)) }, config);
   const result = await request("destroy", form, config, requestFetch);
   if (result.result !== "ok" && result.result !== "not found") throw new CloudinaryError("Could not clean up the uploaded asset.");
+}
+
+// Documents (PDF resumes) are stored as Cloudinary raw assets; the public id keeps the file extension.
+export async function uploadDocument(file: File, config: CloudinaryConfig, requestFetch: typeof fetch = fetch): Promise<CloudinaryAsset> {
+  const id = randomUUID();
+  const publicId = `${config.folder}/resume/${id}.pdf`;
+  const params: Record<string, string> = { timestamp: String(Math.floor(Date.now() / 1000)), overwrite: "false" };
+  if (config.folderMode === "fixed") { params.folder = `${config.folder}/resume`; params.public_id = `${id}.pdf`; }
+  else { params.asset_folder = `${config.folder}/resume`; params.public_id = publicId; }
+  const form = signedForm(params, config);
+  form.set("file", file);
+  const result = await request("upload", form, config, requestFetch, "raw");
+  if (typeof result.secure_url !== "string" || !result.secure_url.startsWith("https://") || result.secure_url.length > 2048 || typeof result.public_id !== "string" || !result.public_id.startsWith(config.folder + "/") || typeof result.asset_id !== "string" || !result.asset_id || result.asset_id.length > 128) {
+    throw new CloudinaryError("Cloudinary returned an invalid upload response.");
+  }
+  return { src: result.secure_url, publicId: result.public_id, assetId: result.asset_id };
+}
+export async function deleteDocument(publicId: string, config: CloudinaryConfig, requestFetch: typeof fetch = fetch) {
+  if (!publicId.startsWith(config.folder + "/")) throw new CloudinaryError("Invalid uploaded asset reference.");
+  const form = signedForm({ public_id: publicId, invalidate: "true", timestamp: String(Math.floor(Date.now() / 1000)) }, config);
+  const result = await request("destroy", form, config, requestFetch, "raw");
+  if (result.result !== "ok" && result.result !== "not found") throw new CloudinaryError("Could not delete the file from Cloudinary.");
 }

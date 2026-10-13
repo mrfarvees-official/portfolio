@@ -1,6 +1,6 @@
 import type { Settings } from "../../lib/settings";
 import { ButtonLink } from "../../components/ui";
-export function Hero({ hero }: { hero: Settings["hero"] }) {
+export function Hero({ hero, hasResume = false }: { hero: Settings["hero"]; hasResume?: boolean }) {
   return (
     <section className="section hero">
       <div className="container hero-grid">
@@ -14,6 +14,11 @@ export function Hero({ hero }: { hero: Settings["hero"] }) {
             <ButtonLink href={hero.secondary.href} secondary>
               {hero.secondary.label}
             </ButtonLink>
+            {hasResume && (
+              <a className="button button-secondary" href="/resume" download>
+                {hero.resumeLabel || "Download resume"} ↓
+              </a>
+            )}
           </div>
         </div>
         <figure className="portrait">
