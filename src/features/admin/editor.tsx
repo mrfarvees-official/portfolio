@@ -1,6 +1,7 @@
 "use client";
 import { useActionState, useId } from "react";
 import Link from "next/link";
+import { MarkdownInput } from "./markdown-input";
 import { saveRecord, saveSettings, deleteRecord, saveSocialLink, deleteSocialLink } from "./actions";
 import { socialFields, type Field, type Collection } from "./registry";
 import type { media, socialLinks } from "../../db/schema";
@@ -16,7 +17,7 @@ function valueOf(field: Field, value: unknown) {
 export function Fields({ fields, record, media }: { fields: Field[]; record: Record<string,unknown>; media: Media[] }) {
   const mediaListId = useId();
   return <div className="field-grid">{fields.map(field => <label className={`field${["textarea","gallery","json"].includes(field.type ?? "") ? " field-wide" : ""}${field.type === "checkbox" ? " checkbox-field" : ""}`} key={field.name}>{field.label}
-    {field.type === "checkbox" ? <input name={field.name} type="checkbox" defaultChecked={Boolean(record[field.name])}/> : ["textarea","gallery","json"].includes(field.type ?? "") ? <textarea className={/Body$|^body$/.test(field.name) ? "markdown-input" : ""} name={field.name} defaultValue={valueOf(field,record[field.name])} required={field.required}/> : field.type === "select" ? <select name={field.name} defaultValue={valueOf(field,record[field.name])}>{field.options?.map(o=><option key={o}>{o}</option>)}</select> : <input name={field.name} type={field.type === "number" ? "number" : field.type === "datetime" ? "datetime-local" : "text"} min={field.name === "readMins" ? 1 : 0} maxLength={field.max} required={field.required} defaultValue={valueOf(field,record[field.name])} list={field.type === "image" ? mediaListId : undefined}/>}
+    {field.type === "checkbox" ? <input name={field.name} type="checkbox" defaultChecked={Boolean(record[field.name])}/> : ["textarea","gallery","json"].includes(field.type ?? "") ? (/Body$|^body$/.test(field.name) ? <MarkdownInput name={field.name} defaultValue={valueOf(field,record[field.name])} required={field.required}/> : <textarea name={field.name} defaultValue={valueOf(field,record[field.name])} required={field.required}/>) : field.type === "select" ? <select name={field.name} defaultValue={valueOf(field,record[field.name])}>{field.options?.map(o=><option key={o}>{o}</option>)}</select> : <input name={field.name} type={field.type === "number" ? "number" : field.type === "datetime" ? "datetime-local" : "text"} min={field.name === "readMins" ? 1 : 0} maxLength={field.max} required={field.required} defaultValue={valueOf(field,record[field.name])} list={field.type === "image" ? mediaListId : undefined}/>}
     {field.hint && <small>{field.hint}</small>}
     {field.type === "image" && <small>Choose an uploaded image or paste an image URL. Upload new images in Media.</small>}
   </label>)}<datalist id={mediaListId}>{media.map(m=><option key={m.src} value={m.src}>{m.name} — {m.alt}</option>)}</datalist></div>;
