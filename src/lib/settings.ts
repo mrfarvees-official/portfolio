@@ -41,11 +41,11 @@ export const defaults: Settings = {
     brandAccent: ".xyz",
     tagline: "Software built to last. Bugs fixed for good.",
     nav: [
-      { label: "Work", href: "/#work" },
       { label: "Experience", href: "/#experience" },
+      { label: "Skills", href: "/#skills" },
+      { label: "Work", href: "/#work" },
       { label: "Services", href: "/#services" },
       { label: "About", href: "/#about" },
-      { label: "Skills", href: "/#skills" },
       { label: "Notes", href: "/notes" },
       { label: "Contact", href: "/#contact" },
     ],

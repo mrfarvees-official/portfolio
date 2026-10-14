@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { techIcon } from "../../components/tech-icons";
+import { NavLinks } from "./nav-links";
 import { ThemeToggle } from "./theme-toggle";
 import type { Settings } from "../../lib/settings";
 function SocialIcon({ name, label }: { name: string; label: string }) {
@@ -16,7 +17,7 @@ function Brand({ site }: { site: Settings["site"] }) {
   );
 }
 export function SiteHeader({ site }: { site: Settings["site"] }) {
-  return <header className="site-header"><div className="container header-inner"><Brand site={site}/><nav aria-label="Main navigation">{site.nav.map(n => <Link className={n.href.endsWith("#contact") ? "nav-contact" : ""} key={n.label} href={n.href}>{n.label}</Link>)}<ThemeToggle/></nav></div></header>;
+  return <header className="site-header"><div className="container header-inner"><Brand site={site}/><nav aria-label="Main navigation"><NavLinks items={site.nav}/><ThemeToggle/></nav></div></header>;
 }
 export async function SiteFooter({ site }: { site: Settings["site"] }) {
   await connection();
