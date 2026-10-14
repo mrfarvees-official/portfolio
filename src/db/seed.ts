@@ -2,6 +2,7 @@ import { db, pool } from "./index";
 import { eq } from "drizzle-orm";
 import { settings, projects, projectSections, services, skillGroups, timeline, notes, media, socialLinks } from "./schema";
 import { peopleOpsIntro, peopleOpsSummary, peopleOpsSections } from "../features/project-content/peopleops-seed";
+import { reconLiteIntro, reconLiteSummary, reconLiteSections } from "../features/project-content/reconlite-seed";
 import { defaults } from "../lib/settings";
 import { caseStudyTemplate, projectSeeds } from "../features/projects/seed-content";
 import { noteTemplate, noteSeeds } from "../features/notes/seed-content";
@@ -77,6 +78,19 @@ async function main() {
     if (project.startedAt === "[Mon YYYY]") patch.startedAt=null;
     await tx.update(projects).set(patch).where(eq(projects.id,project.id));
   });
+  await db.transaction(async tx => {
+    const [project] = await tx.select().from(projects).where(eq(projects.slug,"reconlite")).limit(1).for("update");
+    if (!project) return;
+    const existingSections = await tx.select().from(projectSections).where(eq(projectSections.projectId,project.id));
+    if (!existingSections.length) {
+      await tx.insert(projectSections).values(reconLiteSections.map((section,i) => ({...section,projectId:project.id,sort:(i+1)*10,published:true})));
+    }
+    const patch: Partial<typeof projects.$inferInsert> = {sectionsEnabled:true};
+    if (!project.caseIntro || project.caseIntro.startsWith("[Two sentences:")) patch.caseIntro=reconLiteIntro;
+    if (!project.summary || project.summary.startsWith("[One or two sentences:")) patch.summary=reconLiteSummary;
+    if (!project.contactText || project.contactText.startsWith("[One sentence")) patch.contactText="Need a security-focused developer tool or a safer way to inspect public web configuration? Tell me what you are building.";
+    await tx.update(projects).set(patch).where(eq(projects.id,project.id));
+  });
   const serviceSeeds = [
     {title:"Web apps",body:"You bring the idea. I design the data, build the interface and the backend, and hand over something you can run.",ctaLabel:"Start a project"},
     {title:"Fix and rescue",body:"Code that works on your laptop and breaks in production? I find what's wrong, fix it and leave notes so it stays fixed.",ctaLabel:"Rescue my project"},
@@ -91,7 +105,7 @@ async function main() {
     {label:"Tools",items:["Git","Docker","Linux","CI/CD"]},
   ];
   for(const [i,g] of groups.entries()) if (!(await db.select().from(skillGroups).where(eq(skillGroups.label,g.label)).limit(1)).length) await db.insert(skillGroups).values({...g,sort:i+1});
-  for(const [i,p] of projectSeeds.entries()) if (!(await db.select().from(timeline).where(eq(timeline.title,p.title)).limit(1)).length) await db.insert(timeline).values({title:p.title,dateLabel:"[Mon YYYY]",projectSlug:p.slug,inProgress:i===3,sort:i+1});
+  for(const [i,p] of projectSeeds.entries()) if (!(await db.select().from(timeline).where(eq(timeline.title,p.title)).limit(1)).length) await db.insert(timeline).values({title:p.title,dateLabel:"startedAt" in p ? p.startedAt : "[Mon YYYY]",projectSlug:p.slug,inProgress:"inProgress" in p ? Boolean(p.inProgress) : false,sort:i+1});
   for(const [i,n] of noteSeeds.entries()) {
     const [existing] = await db.select().from(notes).where(eq(notes.slug,n.slug)).limit(1);
     if(!existing) await db.insert(notes).values({...n,body:noteTemplate,published:true,publishedAt:new Date(Date.UTC(2026,0,3-i))});
