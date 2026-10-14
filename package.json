@@ -17,6 +17,7 @@
     "drizzle-orm": "^0.45.4",
     "github-slugger": "^2.0.0",
     "jose": "^6.2.12",
+    "mermaid": "^11.17.2",
     "mysql2": "^3.24.5",
     "next": "16.4.0",
     "next-cloudinary": "^6.19.3",

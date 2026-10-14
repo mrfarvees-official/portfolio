@@ -2,12 +2,13 @@ import { Children, isValidElement, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import GithubSlugger from "github-slugger";
+import { Mermaid } from "./mermaid";
 function textOf(children: ReactNode): string {
   return Children.toArray(children).map(c => isValidElement<{ children?: ReactNode }>(c) ? textOf(c.props.children) : String(c)).join("");
 }
 export function Markdown({ body }: { body: string }) {
   const s = new GithubSlugger();
-  return <div className="prose"><ReactMarkdown remarkPlugins={[remarkGfm]} components={{ h2: ({children}) => <h2 id={s.slug(textOf(children))}>{children}</h2>, h3: ({children}) => <h3 id={s.slug(textOf(children))}>{children}</h3>, img: ({src,alt}) => <img src={src} alt={alt ?? ""} loading="lazy"/> }}>{body}</ReactMarkdown></div>;
+  return <div className="prose"><ReactMarkdown remarkPlugins={[remarkGfm]} components={{ h2: ({children}) => <h2 id={s.slug(textOf(children))}>{children}</h2>, h3: ({children}) => <h3 id={s.slug(textOf(children))}>{children}</h3>, pre: ({children}) => { const code = isValidElement<{ className?: string; children?: ReactNode }>(children) ? children : null; return code && /language-mermaid/.test(code.props.className ?? "") ? <Mermaid chart={textOf(code.props.children).trim()}/> : <pre>{children}</pre>; }, img: ({src,alt}) => <img src={src} alt={alt ?? ""} loading="lazy"/> }}>{body}</ReactMarkdown></div>;
 }
 export function Contents({ body }: { body: string }) {
   const s = new GithubSlugger();
